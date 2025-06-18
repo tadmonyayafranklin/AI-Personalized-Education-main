@@ -23,7 +23,6 @@ interface ChatInterfaceProps {
 const USER_EMAIL = "sarthak24910@gmail.com"
 const APP_NAME = "Polymath"
 const SCROLL_THRESHOLD = 100
-const SCROLL_RESET_DELAY = 1000
 const SUGGESTIONS = ["Explain quantum physics", "Help with calculus", "World history timeline", "Chemistry basics"]
 
 // Animation variants
@@ -136,8 +135,8 @@ function WelcomeScreen({ input, handleInputChange, handleSubmit, isLoading }: {
       transition={{ duration: 0.3 }}
       className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8"
     >
-      <div className="w-full">
-        <div className="flex flex-col items-center justify-center text-center space-y-6 sm:space-y-8 min-h-[60vh] mt-16 sm:mt-20 md:mt-24 ml-4 sm:ml-8 md:ml-12">
+      <div className="w-full max-w-2xl">
+        <div className="flex flex-col items-center justify-center text-center space-y-6 sm:space-y-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -156,7 +155,7 @@ function WelcomeScreen({ input, handleInputChange, handleSubmit, isLoading }: {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8, ease: "easeOut" }}
-            className="w-full max-w-2xl px-4"
+            className="w-full px-4"
           >
             <ChatInput
               value={input}
@@ -171,7 +170,7 @@ function WelcomeScreen({ input, handleInputChange, handleSubmit, isLoading }: {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9, duration: 0.8, ease: "easeOut" }}
-            className="flex flex-wrap justify-center gap-2 sm:gap-3 max-w-2xl px-4"
+            className="flex flex-wrap justify-center gap-2 sm:gap-3 px-4"
           >
             {SUGGESTIONS.map((suggestion, index) => (
               <button
@@ -300,10 +299,13 @@ export function ChatInterface({
     setIsUserScrolling(!isNearBottom)
   }
 
-  // Only auto-scroll for new messages when user is at bottom or it's a new conversation
+  // Auto-scroll for new messages when user is at bottom or it's a new conversation
   useEffect(() => {
     if (!isUserScrolling || messages.length === 1) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+      const timer = setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+      }, 100)
+      return () => clearTimeout(timer)
     }
   }, [messages, isUserScrolling])
 
@@ -324,7 +326,7 @@ export function ChatInterface({
     <div className="flex flex-col h-full bg-white relative">
       <Header />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0">
         <AnimatePresence>
           {shouldShowWelcome && (
             <WelcomeScreen
@@ -336,14 +338,15 @@ export function ChatInterface({
           )}
         </AnimatePresence>
 
-        {/* Messages Container - This is the key fix */}
+        {/* Messages Container */}
         {shouldShowMessages && (
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Messages scroll area - FIXED: Added proper overflow and height constraints */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Messages scroll area */}
             <div 
               ref={messagesContainerRef}
               onScroll={handleScroll}
-              className="flex-1 overflow-y-auto relative"
+              className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+              style={{ scrollbarGutter: 'stable' }}
             >
               <div className="px-4 sm:px-6 lg:px-8 py-6">
                 <div className="w-full space-y-6 sm:space-y-8">
